@@ -6,8 +6,8 @@ Step 1: Installation
 
 Ensure you have Python installed on your system. You can download Python from the official website: Python Downloads.
 Install Flask and other required libraries by running the following command in your terminal or command prompt:
-Copy code
 pip install flask scikit-learn matplotlib wordcloud
+
 Step 2: Download the Application Files
 
 Download the following files:
@@ -20,8 +20,8 @@ Step 3: Run the Application
 Open a terminal or command prompt.
 Navigate to the directory where you saved the downloaded files.
 Run the Flask application by executing the following command:
-Copy code
 python app.py
+
 Once the Flask application is running, you should see a message indicating that the server is running. By default, the application will be accessible at http://127.0.0.1:8080/.
 Step 4: Using the Application
 
