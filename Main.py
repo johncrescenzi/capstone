@@ -1,23 +1,21 @@
 import joblib
-import pandas as pd
 import matplotlib
+import pandas as pd
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from flask import Flask, jsonify, render_template, request, send_file
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 from wordcloud import WordCloud
+from sklearn.model_selection import train_test_split
 
 app = Flask(__name__)
 
 # Load the CSV data
 data = pd.read_csv('mbti.csv')
-
-# Preprocess the data (you need to implement this part based on your specific preprocessing requirements)
 
 # Split the data into features (comments) and labels (MBTI types)
 X = data['posts']
@@ -29,32 +27,28 @@ pipeline = Pipeline([
     ('clf', LinearSVC()),
 ])
 
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X,
+                                                    y,
+                                                    test_size=0.2,
+                                                    random_state=42)
+
 # Train the model
-pipeline.fit(X, y)
+pipeline.fit(X_train, y_train)
 
 # Load the pre-trained NLP model
 model = joblib.load('mbti_nlp_model.pkl')
-
-
-def evaluate_model(user_comment, X_train, X_test, y_train, y_test):
-  # Fit the TfidfVectorizer with the new training data
-  pipeline.named_steps['tfidf'].fit(X_train)
-
-  # Train the model
-  pipeline.fit(X_train, y_train)
-
-  # Predict using the input comment
-  y_pred = pipeline.predict([user_comment])
-
-  # Calculate accuracy
-  accuracy = accuracy_score(y_test, y_pred)
-  return accuracy
 
 
 # Define a function to predict MBTI type based on user input
 def predict_mbti(user_comment):
   prediction = model.predict([user_comment])
   return prediction[0]
+
+
+# Calculate the accuracy of the model
+y_pred = pipeline.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
 
 
 # Define a function to generate a wordcloud
@@ -79,7 +73,7 @@ def predict():
   # Predict MBTI type
   predicted_mbti = predict_mbti(user_comment)
 
-  return jsonify({'predicted_mbti': predicted_mbti})
+  return jsonify({'predicted_mbti': predicted_mbti, 'accuracy': accuracy})
 
 
 # Visualization routes
@@ -147,4 +141,4 @@ def send_postlength():
 
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=81)
+  app.run(host='0.0.0.0', port=8080)

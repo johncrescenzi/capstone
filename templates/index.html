@@ -10,7 +10,7 @@
 <body>
 
 <!-- Navbar -->
-  <div class="navbar bg-base-100">
+<div class="navbar bg-base-100">
     <div class="navbar-start">
       <a onclick="home()" class="btn btn-outline text-xl">MBTI Predictor</a>
     </div>
@@ -40,7 +40,7 @@
   <div id="visualization" class="hero h-dvh bg-base-200">
     <div class="hero-content flex-col lg:flex-row">
       <div id="predictionResult" class="text-2xl w-full text-center font-bold text-white"><h1>Your Type Is:</h1></div> 
-      
+      <div id="accuracyResult" class="text-lg w-full text-center font-bold text-white"></div>
       <img id="mbtiImage" src="{{ url_for('static', filename='mbti.webp') }}" />
       <div> 
         <div class="card shrink-0 w-full m-auto max-w-sm shadow-2xl bg-base-100">
@@ -63,125 +63,125 @@
   </div>
   
   <script>
-    function predictMBTI() {
-        // Show loading spinner
-        document.getElementById("predictButton").style.display = "none";
-        document.getElementById("loadingSpinner").style.display = "inline-block";
+  function predictMBTI() {
+      // Show loading spinner
+      document.getElementById("predictButton").style.display = "none";
+      document.getElementById("loadingSpinner").style.display = "inline-block";
 
-        var userComment = document.getElementById("userComment").value;
-        var formData = new FormData();
-        formData.append("userComment", userComment);
+      var userComment = document.getElementById("userComment").value;
+      var formData = new FormData();
+      formData.append("userComment", userComment);
 
-        fetch('/predict', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if ('predicted_mbti' in data) {
-                var predictedMBTI = data.predicted_mbti;
-                document.getElementById("predictionResult").innerHTML = `<h1>Your Type Is: ${predictedMBTI}`;
-              // Update image source based on predicted MBTI using Flask's url_for function
-              var imageUrl = "{{ url_for('static', filename='') }}" + predictedMBTI.toLowerCase() + ".webp";
-              document.getElementById("mbtiImage").src = imageUrl;
-            }
-            // Hide loading spinner
-            document.getElementById("predictButton").style.display = "inline-block";
-            document.getElementById("loadingSpinner").style.display = "none";
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Hide loading spinner on error
-            document.getElementById("predictButton").style.display = "inline-block";
-            document.getElementById("loadingSpinner").style.display = "none";
-        });
-    }
+      fetch('/predict', {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+          if ('predicted_mbti' in data) {
+              var predictedMBTI = data.predicted_mbti;
+              var accuracy = data.accuracy;
+              document.getElementById("predictionResult").innerHTML = `<h1>Your Type Is: ${predictedMBTI}</h1><br/><h2>Model Accuracy Is: ${accuracy}`;
 
-    function showDistribution() {
-        var visualizationDiv = document.getElementById('visualization');
-        visualizationDiv.innerHTML = `<span class="loading loading-bars loading-lg"></span>`;
+            // Update image source based on predicted MBTI using Flask's url_for function
+            var imageUrl = "{{ url_for('static', filename='') }}" + predictedMBTI.toLowerCase() + ".webp";
+            document.getElementById("mbtiImage").src = imageUrl;
+          }
+          // Hide loading spinner
+          document.getElementById("predictButton").style.display = "inline-block";
+          document.getElementById("loadingSpinner").style.display = "none";
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          // Hide loading spinner on error
+          document.getElementById("predictButton").style.display = "inline-block";
+          document.getElementById("loadingSpinner").style.display = "none";
+      });
+  }
 
-        fetch('/distribution')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            return response.blob();
-        })
-        .then(blob => {
-            // Display the visualization
-            visualizationDiv.innerHTML = `
-                <img src="${URL.createObjectURL(blob)}" alt="Distribution of MBTI Types" />`;
-        })
-        .catch(error => console.error('Error:', error));
-    }
+  function showDistribution() {
+      var visualizationDiv = document.getElementById('visualization');
+      visualizationDiv.innerHTML = `<span class="loading loading-bars loading-lg"></span>`;
 
-    function showWordclouds() {
-        var visualizationDiv = document.getElementById('visualization');
-        visualizationDiv.innerHTML = `<span class="loading loading-bars loading-lg"></span>`;
+      fetch('/distribution')
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok.');
+          }
+          return response.blob();
+      })
+      .then(blob => {
+          // Display the visualization
+          visualizationDiv.innerHTML = `
+              <img src="${URL.createObjectURL(blob)}" alt="Distribution of MBTI Types" />`;
+      })
+      .catch(error => console.error('Error:', error));
+  }
 
-        fetch('/wordclouds')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            return response.blob();
-        })
-        .then(blob => {
-            // Display the visualization
-            visualizationDiv.innerHTML = `
-                <img src="${URL.createObjectURL(blob)}" alt="Word Clouds" />`;
-        })
-        .catch(error => console.error('Error:', error));
-    }
+  function showWordclouds() {
+      var visualizationDiv = document.getElementById('visualization');
+      visualizationDiv.innerHTML = `<span class="loading loading-bars loading-lg"></span>`;
 
-    function showPostLength() {
-        var visualizationDiv = document.getElementById('visualization');
-        visualizationDiv.innerHTML = `<span class="loading loading-bars loading-lg"></span>`;
+      fetch('/wordclouds')
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok.');
+          }
+          return response.blob();
+      })
+      .then(blob => {
+          // Display the visualization
+          visualizationDiv.innerHTML = `
+              <img src="${URL.createObjectURL(blob)}" alt="Word Clouds" />`;
+      })
+      .catch(error => console.error('Error:', error));
+  }
 
-        fetch('/postlength')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok.');
-            }
-            return response.blob();
-        })
-        .then(blob => {
-            // Display the visualization
-            visualizationDiv.innerHTML = `
-                <img src="${URL.createObjectURL(blob)}" alt="Post Length" />`;
-        })
-        .catch(error => console.error('Error:', error));
-    }
+  function showPostLength() {
+      var visualizationDiv = document.getElementById('visualization');
+      visualizationDiv.innerHTML = `<span class="loading loading-bars loading-lg"></span>`;
 
+      fetch('/postlength')
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok.');
+          }
+          return response.blob();
+      })
+      .then(blob => {
+          // Display the visualization
+          visualizationDiv.innerHTML = `
+              <img src="${URL.createObjectURL(blob)}" alt="Post Length" />`;
+      })
+      .catch(error => console.error('Error:', error));
+  }
 
-    function home() {
-      document.getElementById('visualization').innerHTML = `
-      <div class="hero-content flex-col lg:flex-row">
-      <h1 class="text-2xl font-bold text-center">Your Type is:</h1>
-      <div id="predictionResult" class="w-full text-center text-white"></div> 
-      <img id="mbtiImage" src="{{ url_for('static', filename='mbti.webp') }}" />
-      <div> 
-        <div class="card shrink-0 w-full m-auto max-w-sm shadow-2xl bg-base-100">
-          <div class="card-body">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Enter your comment</span>
-              </label>
-              <input id="userComment" type="comment" placeholder="I love music! Let's go hiking!" class="input input-bordered" required />
-            </div>
-            
-            <div class="form-control mt-6">
-              <button onclick="predictMBTI()" id="predictButton" class="btn btn-primary">Predict</button>
-              <span id="loadingSpinner" class="loading loading-spinner" style="display:none"></span>
-            </div>
+  function home() {
+    document.getElementById('visualization').innerHTML = `
+    <div class="hero-content flex-col lg:flex-row">
+    <h1 class="text-2xl font-bold text-center">Your Type is:</h1>
+    <div id="predictionResult" class="w-full text-center text-white"></div> 
+    <img id="mbtiImage" src="{{ url_for('static', filename='mbti.webp') }}" />
+    <div> 
+      <div class="card shrink-0 w-full m-auto max-w-sm shadow-2xl bg-base-100">
+        <div class="card-body">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Enter your comment</span>
+            </label>
+            <input id="userComment" type="comment" placeholder="I love music! Let's go hiking!" class="input input-bordered" required />
+          </div>
+
+          <div class="form-control mt-6">
+            <button onclick="predictMBTI()" id="predictButton" class="btn btn-primary">Predict</button>
+            <span id="loadingSpinner" class="loading loading-spinner" style="display:none"></span>
           </div>
         </div>
       </div>
     </div>
-      `;
-    }
-    
+  </div>
+    `;
+  }
   </script>
 
 </body>
